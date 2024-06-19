@@ -12,7 +12,6 @@ require('dotenv').config();
 //middleware
 
 console.log(process.env.MONGO_URL);
-
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -26,7 +25,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.SRC,
     methods: ['GET', 'POST'],
     credentials: true,
   },
