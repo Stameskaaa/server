@@ -595,23 +595,18 @@ async function getuserlist(name, type) {
 //запросы
 
 app.post('/uploadmessage', upload.none(), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   uploadMessage(req.body).then((r) => res.send(r));
 });
 
 app.post('/personalMessage', upload.none(), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   getPersonalMessage(req.body).then((r) => res.send(r));
 });
 
 app.post('/sendMessage', upload.none(), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   sendMessage(req.body).then((r) => res.send(r));
 });
 
 app.post('/loginUser', upload.none(), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-
   try {
     const resultArr = await findUser(req.body.log, req.body.pass).catch(console.error);
 
@@ -626,8 +621,6 @@ app.post('/loginUser', upload.none(), async (req, res) => {
 });
 
 app.post('/registrationUser', upload.none(), async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-
   try {
     const resultArr = await findUserWithouPass(req.body.name).catch(console.error);
 
@@ -713,7 +706,6 @@ app.post('/sendPost', upload.array('files'), async (req, res) => {
       console.log(file.originalname);
     });
   }
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   sendPost(data)
     .then((r) => res.send(r))
     .catch(console.log);
@@ -724,7 +716,6 @@ app.post('/sendPhoto', upload.fields([{ name: 'file' }]), async (req, res) => {
 
   let response = await sendPhotos(data);
 
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.send(response);
 });
 
