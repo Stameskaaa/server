@@ -33,7 +33,7 @@ app.use(
 );
 const io = new Server(server, {
   cors: {
-    origin: process.env.SRC,
+    origin: '*',
     methods: ['GET', 'POST'],
     credentials: true,
   },
