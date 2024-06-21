@@ -11,7 +11,6 @@ const cors = require('cors');
 require('dotenv').config();
 //middleware
 
-console.log(process.env.MONGO_URL);
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,7 +21,8 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
-//socket.io
+
+// socket.io;
 app.use(
   cors({
     origin: '*',
@@ -356,19 +356,21 @@ async function subscribe(log, log2) {
     if (friendData[0].subscriber.length > 1) {
       const newArray = friendData[0].subscriber.slice(1);
       if (newArray.find((v) => v.name === log)) {
-        return { text: 'ты подписан уже на него', data: null };
+        return { text: 'Ты уже подписан на него', data: null };
       }
     }
     if (friendData[0].subscribed.length > 1) {
       const newArray = friendData[0].subscribed.slice(1);
       if (newArray.find((v) => v.name === log)) {
-        return { text: 'он на тебя подписан то есть надо в др добавить', data: null };
+        const response = await addfriend(log, log2);
+
+        return response;
       }
     }
     if (friendData[0].friends.length > 1) {
       const newArray = friendData[0].friends.slice(1);
       if (newArray.find((v) => v.name === log)) {
-        return { text: 'ты у него в друзьях', data: null };
+        return { text: 'Ты у него в друзьях', data: null };
       }
     }
 
@@ -522,7 +524,6 @@ async function getphotos(log) {
     const db = mongoClient.db('mongo');
     const collection = await db.collection('users');
     const user = await collection.find({ name: log }).toArray();
-    let data = user.photos;
     if (user[0]) {
       return user[0].photos;
     } else {
@@ -532,6 +533,19 @@ async function getphotos(log) {
     console.log(err, 'its error');
     return 'error';
   }
+}
+
+async function changeProfileData(data, name) {
+  const db = mongoClient.db('mongo');
+  const collection = await db.collection('users');
+  const result = await collection.updateOne(
+    { name },
+    {
+      $set: data,
+    },
+  );
+
+  return result;
 }
 
 async function getuserchats(log) {
@@ -772,4 +786,9 @@ app.get('/getuserchats', async (request, response) => {
     console.log(error);
     response.send(error);
   }
+});
+
+app.post('/changeprofiledata', upload.array('files'), async (req, res) => {
+  const data = await changeProfileData({ ...req.body.profileDataObj }, req.body.name);
+  res.status(200).send(data);
 });
