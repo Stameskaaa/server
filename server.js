@@ -606,6 +606,71 @@ async function getuserlist(name, type) {
   }
 }
 
+async function deleteMessages(log1, log2, indexesToDelete) {
+  const db = mongoClient.db('mongo');
+  const collection = await db.collection('chats');
+
+  try {
+    const chat = await collection.findOne({
+      $or: [
+        { firstUser: log1, secondUser: log2 },
+        { firstUser: log2, secondUser: log1 },
+      ],
+    });
+    if (!chat) {
+      return { text: 'Чат не найден', data: null };
+    }
+    const updatedChat = chat.chat.filter((_, index) => !indexesToDelete.includes(`${index}`));
+
+    const result = await collection.updateOne({ _id: chat._id }, { $set: { chat: updatedChat } });
+
+    if (result.modifiedCount > 0) {
+      return { text: 'Сообщения успешно удалены', data: updatedChat };
+    } else {
+      return { text: 'Сообщения не были удалены', data: null };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function editChatMessage(log1, log2, updateData) {
+  try {
+    const db = mongoClient.db('mongo');
+    const collection = await db.collection('chats');
+
+    const chat = await collection.findOne({
+      $or: [
+        { firstUser: log1, secondUser: log2 },
+        { firstUser: log2, secondUser: log1 },
+      ],
+    });
+
+    if (!chat) {
+      return { text: 'Чат не найден', data: null };
+    }
+
+    const { indexToEdit, message } = updateData;
+
+    if (indexToEdit < 0 || indexToEdit >= chat.chat.length) {
+      return { text: 'Неверный индекс сообщения', data: null };
+    }
+
+    chat.chat[indexToEdit].message = message;
+
+    const result = await collection.updateOne({ _id: chat._id }, { $set: { chat: chat.chat } });
+
+    if (result.modifiedCount > 0) {
+      return { text: 'Сообщение успешно обновлено', data: chat.chat };
+    } else {
+      return { text: 'Сообщение не было обновлено', data: null };
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении сообщения:', error);
+    return { text: 'Произошла ошибка', data: null };
+  }
+}
+
 //запросы
 
 app.post('/uploadmessage', upload.none(), async (req, res) => {
@@ -791,4 +856,16 @@ app.get('/getuserchats', async (request, response) => {
 app.post('/changeprofiledata', upload.array('files'), async (req, res) => {
   const data = await changeProfileData({ ...req.body.profileDataObj }, req.body.name);
   res.status(200).send(data);
+});
+
+app.post('/deleteMessages', upload.none(), async (req, res) => {
+  const respone = await deleteMessages(req.query.log1, req.query.log2, req.body.arrayIndexes);
+
+  res.status(200).send(respone);
+});
+
+app.post('/editMessage', upload.none(), async (req, res) => {
+  const respone = await editChatMessage(req.query.log1, req.query.log2, req.body.objectInfo);
+
+  res.status(200).send(respone);
 });
