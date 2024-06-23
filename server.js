@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 // socket.io;
 app.use(
   cors({
-    origin: `${process.env.SRC}`,
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
