@@ -634,6 +634,25 @@ async function deleteMessages(log1, log2, indexesToDelete) {
   }
 }
 
+async function changeSatatus(status, name) {
+  try {
+    const db = mongoClient.db('mongo');
+    const collection = await db.collection('users');
+
+    const result = await collection.updateOne({ name: name }, { $set: { status: status } });
+
+    if (result.matchedCount > 0) {
+      return { text: 'Вы успешно вошли в сеть', data: result };
+    } else {
+      console.log(`Пользователь с именем '${name}' не найден.`);
+      return { text: 'Пользователь не найден', data: null };
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении статуса:', error);
+    return { text: 'Произошла ошибка', data: null };
+  }
+}
+
 async function editChatMessage(log1, log2, updateData) {
   try {
     const db = mongoClient.db('mongo');
@@ -868,4 +887,13 @@ app.post('/editMessage', upload.none(), async (req, res) => {
   const respone = await editChatMessage(req.query.log1, req.query.log2, req.body.objectInfo);
 
   res.status(200).send(respone);
+});
+
+app.get('/sendstatus', async (req, res) => {
+  try {
+    const data = await changeSatatus(req.query.status, req.query.name);
+    res.status(200).send(data);
+  } catch (error) {
+    console.log(error);
+  }
 });
